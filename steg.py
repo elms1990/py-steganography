@@ -2,6 +2,8 @@ import Image
 import sys
 import random
 
+SIZE_T = 32
+
 def RetrieveData(image, seed):
     w,h = image.size
     img = image.load()
@@ -17,11 +19,12 @@ def RetrieveData(image, seed):
     data = []
     size = 10000
     end = False
+    header_ok = False
     while not end:
-        if bits == sys.getsizeof(int()):
-            size = parseHeader(data[:sys.getsizeof(int())])
-            print size
-            data = data[sys.getsizeof(int()):]
+        if bits >= SIZE_T and header_ok == False:
+            size = parseHeader(data[:SIZE_T])
+            data = data[SIZE_T:]
+            header_ok = True
 
         rd = random.randint(0, len(template)-1) 
         pixel = template[rd]
@@ -32,7 +35,7 @@ def RetrieveData(image, seed):
             data.append(img[pixel[0], pixel[1]][pix] & 0x1)
             pix = (pix + 1)%3
             bits += 1
-            if bits >= size + sys.getsizeof(int()):
+            if bits >= size + SIZE_T:
                 end = True
                 break
 
@@ -107,7 +110,7 @@ def LinearizeBits(data):
                 bit_buffer.append(((0x1 << j)&ord(i)) >> j)
     else:
         for i in data:
-            for j in range(0, sys.getsizeof(int())):
+            for j in range(0, SIZE_T):
                 bit_buffer.append(((0x1 << j)&i) >> j)
   
     return bit_buffer
