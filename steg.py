@@ -17,15 +17,23 @@ def RetrieveData(image, seed):
 
     bits = 0
     data = []
-    size = 10000
-    end = False
-    header_ok = False
-    while not end:
-        if bits >= SIZE_T and header_ok == False:
-            size = parseHeader(data[:SIZE_T])
-            data = data[SIZE_T:]
-            header_ok = True
+    hc = SIZE_T
+    while hc > 0:
+        rd = random.randint(0, len(template)-1)
+        pixel = template[rd]
+        template.pop(rd)
+        pix = random.randint(0, 2)
 
+        for jj in range(0, 3):
+            data.append(img[pixel[0], pixel[1]][pix] & 0x1)
+            pix = (pix + 1)%3
+            bits += 1
+            hc -= 1
+
+    size = parseHeader(data[:SIZE_T])
+    data = data[SIZE_T:]
+    end = False
+    while not end:
         rd = random.randint(0, len(template)-1) 
         pixel = template[rd]
         template.pop(rd)
@@ -83,21 +91,22 @@ def HideData(image, data, seed):
     random.shuffle(template)
 
     lin_data = lin_header + lin_image
-    while len(lin_data) > 0 and len(template) > 0:
+    len_ld = len(lin_data)
+    k = 0
+    while k < len_ld:
         rd = random.randint(0, len(template)-1)
         pair = template[rd]
         template.pop(rd)
-
         pix = random.randint(0, 2) 
        
         for jj in range(0, 3):
             pixel = list(img[pair[0], pair[1]])
-            pixel[pix] = ((pixel[pix] >> 1) << 1) | lin_data[0]
+            pixel[pix] = ((pixel[pix] >> 1) << 1) | lin_data[k]
             img[pair[0],pair[1]] = tuple(pixel)
-            lin_data.pop(0)
-            if len(lin_data) == 0:
-                break
             pix = (pix + 1)%3
+            k += 1
+            if k > len_ld - 1:
+                break
 
     return image
 
